@@ -11,11 +11,63 @@ provider:
   region: us-east-1
   stage: ${opt:stage, 'dev'}
   lambdaHashingVersion: 20201221
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:PutItem
+        - dynamodb:GetItem
+        - dynamodb:Scan
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource:
+        - "arn:aws:dynamodb:us-east-1:831602914192:table/TelefonosTable"
+
+resources:
+  Resources:
+    TelefonosTabla:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: TelefonosTable
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST    
 
 functions:
-  api:
-    handler: index.handler
+  crearTelefono:
+    handler: src/handlers/crearTelefono.handler
     events:
       - httpApi:
-          path: /
+          path: /telefono
+          method: POST
+  listarTelefonos:
+    handler: src/handlers/listarTelefonos.handler
+    events:
+      - httpApi:
+          path: /telefonos
           method: GET
+  obtenerTelefono:
+    handler: src/handlers/obtenerTelefono.handler
+    events:
+      - httpApi:
+          path: /telefono/{id}
+          method: GET
+  actualizarTelefono:
+    handler: src/handlers/actualizarTelefono.handler
+    events:
+      - httpApi:
+          path: /actualizar
+          method: PUT
+  eliminarTelefono:
+    handler: src/handlers/eliminarTelefono.handler
+    events:
+      - httpApi:
+          path: /eliminar/{id}
+          method: DELETE                
+
+custom:
+  bundle:
+    linting: false
